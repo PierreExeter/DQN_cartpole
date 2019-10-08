@@ -19,7 +19,7 @@ print('states high value:', env.observation_space.high)
 print('states low value:', env.observation_space.low)
 
 # HYPERPARAMETERS
-n_train_episodes = 1000
+n_train_episodes = 500
 n_test_episodes = 10        
 n_steps = 200               
 gamma = 0.95                # discount factor
@@ -78,7 +78,6 @@ def replay(batch_size, epsilon):
             y_target[0][action] = reward  
         else:                   # predict the future discounted reward
             y_target[0][action] = reward + gamma * np.max(model.predict(next_state)[0])
-        # print(y_target[0])
 
         x_batch.append(state[0])
         y_batch.append(y_target[0])
