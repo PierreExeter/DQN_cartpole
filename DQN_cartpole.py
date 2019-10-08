@@ -64,12 +64,6 @@ def preprocess_state(state):
 def replay(batch_size, epsilon):
     ''' 
     Trains the network on a smaller sample selection of the runs in memory 
-    Advantages:
-    - reduces correlation between experiences (random selection from the memory buffer)
-    + avoid overfitting
-    - creates an input dataset stable enough for training
-    - increases learning speed because we train on a smaller dataset
-    - reuses past transitions to avoid catastrophic forgetting
     '''
     x_batch, y_batch = [], []
     
@@ -79,16 +73,18 @@ def replay(batch_size, epsilon):
     # Extract informations from each batch
     for state, action, reward, next_state, done in batch:
         y_target = model.predict(state) # size: (1 x 2)
-        # update the index of the action taken in this batch
+        # update the Q value for this state
         if done:                # the target is the reward
             y_target[0][action] = reward  
         else:                   # predict the future discounted reward
             y_target[0][action] = reward + gamma * np.max(model.predict(next_state)[0])
+        # print(y_target[0])
+
         x_batch.append(state[0])
         y_batch.append(y_target[0])
     
     X = np.array(x_batch)  # size: (64 x 4)
-    y = np.array(y_batch)  # size: (64 x 4)
+    y = np.array(y_batch)  # size: (64 x 2)
     model.fit(X, y, batch_size=len(x_batch), verbose=0)
 
 
@@ -108,13 +104,13 @@ for episode in range(n_train_episodes):
         memory.append((current_state, action, reward, next_state, done))
         current_state = next_state
         episode_rewards += reward
+        replay(batch_size, epsilon)
 
         if done:
             print('Episode: {:d}/{:d} | cumulative reward: {:.0f} | epsilon: {:.2f}'.format(episode, n_train_episodes, episode_rewards, epsilon))
             break
 
     rewards.append(episode_rewards)
-    replay(batch_size, epsilon)
     epsilon = update_epsilon(epsilon)
 
 # PLOT RESULTS
