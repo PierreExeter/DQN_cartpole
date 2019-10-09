@@ -30,8 +30,13 @@ target_model_update=1e-2, policy=policy)
 dqn.compile(Adam(lr=1e-3), metrics=['mae'])
 
 # TRAIN AGENT
-dqn.fit(env, nb_steps=20000, visualize=False, verbose=2)
-dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
+train = True
+
+if train:
+    dqn.fit(env, nb_steps=50000, visualize=False, verbose=2)
+    dqn.save_weights('dqn_{}_weights.h5f'.format(ENV_NAME), overwrite=True)
+else:       # enjoy pre-trained agent
+    dqn.load_weights('dqn_{}_weights.h5f'.format(ENV_NAME))
 
 # TEST AGENT
 dqn.test(env, nb_episodes=5, visualize=True)
